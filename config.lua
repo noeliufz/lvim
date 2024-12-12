@@ -1,166 +1,127 @@
--- Read the docs: https://www.lunarvim.org/docs/configuration
--- Example configs: https://github.com/LunarVim/starter.lvim
--- Video Tutorials: https://www.youtube.com/watch?v=sFA9kX-Ud_c&list=PLhoH5vyxr6QqGu0i7tt_XoVK9v-KvZ3m6
--- Forum: https://www.reddit.com/r/lunarvim/
--- Discord: https://discord.com/invite/Xb9B4Ny
-vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })    -- 设置浮动窗口背景透明
-vim.api.nvim_set_hl(0, "FloatBorder", { bg = "NONE" })    -- 浮动窗口边框透明
-vim.api.nvim_set_hl(0, "BufferLineFill", { bg = "NONE" }) -- BufferLine 填充透明
--- key mapings
-lvim.builtin.terminal.open_mapping = "<c-/>"
-lvim.transparent_window = true
+-- [[
+-- LunarVim 配置文件
+-- 官方文档: https://www.lunarvim.org/docs/configuration
+-- 示例配置: https://github.com/LunarVim/starter.lvim
+-- 视频教程: https://www.youtube.com/watch?v=sFA9kX-Ud_c&list=PLhoH5vyxr6QqGu0i7tt_XoVK9v-KvZ3m6
+-- 技术支持: https://discord.com/invite/Xb9B4Ny
+-- ]]
 
-vim.cmd("highlight Breadcrumbs ctermfg=white guifg=None")
+-- [[ 基础配置 ]]
+lvim.transparent_window = true         -- 启用窗口透明
+lvim.colorscheme = "monokai-pro"       -- 设置主题为 Monokai Pro
+lvim.format_on_save.enabled = true     -- 自动格式化文件保存
+lvim.builtin.lualine.style = "default" -- 使用默认的状态栏样式
+
+-- [[ 透明背景设置 ]]
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })    -- 浮动窗口背景透明
+vim.api.nvim_set_hl(0, "FloatBorder", { bg = "NONE" })    -- 浮动窗口边框透明
+vim.api.nvim_set_hl(0, "BufferLineFill", { bg = "NONE" }) -- BufferLine 背景透明
 
 vim.defer_fn(function()
-  vim.api.nvim_set_hl(0, "WinBarNC", { bg = "none", fg = "none" })
+  vim.api.nvim_set_hl(0, "WinBarNC", { bg = "none", fg = "none" }) -- 非活动窗口标题栏透明
 end, 0)
 
+-- [[ 键位映射 ]]
+-- 退出插入模式
+lvim.keys.insert_mode["jk"] = "<Esc>"
+
+-- 保存文件快捷键，避免跳动
+vim.keymap.set({ "n", "i", "v" }, "<C-s>", function()
+  vim.cmd("silent! update") -- 静默保存当前文件
+end, { desc = "Save file" })
+
+-- 切换 Buffer
+lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>" -- 向左切换 Buffer
+lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>" -- 向右切换 Buffer
+lvim.keys.normal_mode["<S-j>"] = ":BufferLineMoveNext<CR>"  -- 将当前 Buffer 向右移动
+lvim.keys.normal_mode["<S-k>"] = ":BufferLineMovePrev<CR>"  -- 将当前 Buffer 向左移动
+
+-- LeetCode 快捷键
+lvim.keys.normal_mode["<leader>kl"] = ":Leet<CR>"        -- 打开 LeetCode 面板
+lvim.keys.normal_mode["<leader>kr"] = ":Leet run<CR>"    -- 运行当前题目
+lvim.keys.normal_mode["<leader>ks"] = ":Leet submit<CR>" -- 提交当前题目
+
+-- 打开终端快捷键
+lvim.builtin.terminal.open_mapping = "<c-/>"
+
+-- [[ 插件配置 ]]
 lvim.plugins = {
-  { "nvim-telescope/telescope.nvim", },
-  { "nvim-lua/plenary.nvim", },
-  { "MunifTanjim/nui.nvim", },
-  { "nvim-treesitter/nvim-treesitter", },
-  { "rcarriga/nvim-notify", },
-  { "nvim-tree/nvim-web-devicons", },
+  { "nvim-telescope/telescope.nvim" },   -- 文件和代码搜索工具
+  { "nvim-lua/plenary.nvim" },           -- 提供基础依赖
+  { "MunifTanjim/nui.nvim" },            -- UI 支持
+  { "nvim-treesitter/nvim-treesitter" }, -- 语法高亮
+  { "rcarriga/nvim-notify" },            -- 消息通知
+  { "nvim-tree/nvim-web-devicons" },     -- 图标支持
+
+  -- LeetCode 插件
   {
     "kawre/leetcode.nvim",
     build = ":TSUpdate html",
     opts = {
-      -- configuration goes here
-      cn = {
-        enabled = true,
-      },
-      lang = "rust",
+      cn = { enabled = true }, -- 使用 LeetCode 中文站
+      lang = "rust",           -- 默认语言为 Rust
     },
   },
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    opts = {
-      transparent_background = true,
-    },
-  },
+
+  -- Monokai Pro 配置
   {
     "loctvl842/monokai-pro.nvim",
     config = function()
       require("monokai-pro").setup({
-        transparent_background = true,
-        terminal_colors = true,
-        devicons = true, -- highlight the icons of `nvim-web-devicons`
+        transparent_background = true, -- 启用透明背景
         styles = {
-          comment = { italic = true },
-          keyword = { italic = true },       -- any other keyword
-          type = { italic = true },          -- (preferred) int, long, char, etc
-          storageclass = { italic = true },  -- static, register, volatile, etc
-          structure = { italic = true },     -- struct, union, enum, etc
-          parameter = { italic = true },     -- parameter pass in function
-          annotation = { italic = true },
-          tag_attribute = { italic = true }, -- attribute of tag in reactjs
+          comment = { italic = true }, -- 注释字体倾斜
+          keyword = { italic = true }, -- 关键字字体倾斜
+          type = { italic = true },    -- 类型字体倾斜
         },
-        filter = "pro",                      -- classic | octagon | pro | machine | ristretto | spectrum
-        -- Enable this will disable filter option
-        day_night = {
-          enable = false,            -- turn off by default
-          day_filter = "pro",        -- classic | octagon | pro | machine | ristretto | spectrum
-          night_filter = "spectrum", -- classic | octagon | pro | machine | ristretto | spectrum
-        },
-        inc_search = "background",   -- underline | background
+        filter = "pro",                -- 使用 Pro 风格
         background_clear = {
-          "float_win",
-          "toggleterm",
-          "telescope",
-          "which-key",
-          "renamer",
-          "notify",
-          "nvim-tree",
-          "neo-tree",
-          "bufferline", -- better used if background of `neo-tree` or `nvim-tree` is cleared
-        },              -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree", "nvim-tree", "bufferline"
-        plugins = {
-          bufferline = {
-            underline_selected = false,
-            underline_visible = false,
-          },
-          indent_blankline = {
-            context_highlight = "default", -- default | pro
-            context_start_underline = false,
-          },
+          "float_win", "telescope", "nvim-tree", "bufferline",
         },
       })
-    end
+    end,
   },
-  {
-    "folke/trouble.nvim",
-    cmd = "TroubleToggle",
-  },
-  {
-    "rcarriga/nvim-notify",
-    config = function()
-      require('notify').setup({
-        background_colour = "#000000",
-      })
-    end
-  },
+
+  -- 窗口平滑滚动插件
   {
     "karb94/neoscroll.nvim",
     event = "WinScrolled",
     config = function()
       require('neoscroll').setup({
-        -- All these keys will be mapped to their corresponding default scrolling animation
-        mappings = { '<C-u>', '<C-d>', '<C-b>', '<C-f>',
-          '<C-y>', '<C-e>', 'zt', 'zz', 'zb' },
-        hide_cursor = true,          -- Hide cursor while scrolling
-        stop_eof = true,             -- Stop at <EOF> when scrolling downwards
-        use_local_scrolloff = false, -- Use the local scope of scrolloff instead of the global scope
-        respect_scrolloff = false,   -- Stop scrolling when the cursor reaches the scrolloff margin of the file
-        cursor_scrolls_alone = true, -- The cursor will keep on scrolling even if the window cannot scroll further
-        easing_function = nil,       -- Default easing function
-        pre_hook = nil,              -- Function to run before the scrolling animation starts
-        post_hook = nil,             -- Function to run after the scrolling animation ends
+        mappings = { '<C-u>', '<C-d>', '<C-b>', '<C-f>', 'zt', 'zz', 'zb' },
+        hide_cursor = true, -- 滚动时隐藏光标
       })
-    end
+    end,
+  },
+
+  -- Trouble 插件：用于诊断和快速导航
+  {
+    "folke/trouble.nvim",
+    cmd = "TroubleToggle",
+  },
+
+  -- 通知插件配置
+  {
+    "rcarriga/nvim-notify",
+    config = function()
+      require('notify').setup({
+        background_colour = "#000000", -- 通知背景颜色
+      })
+    end,
   },
 }
+
+-- [[ Trouble 快捷键配置 ]]
 lvim.builtin.which_key.mappings["t"] = {
-  name = "Diagnostics",
-  t = { "<cmd>TroubleToggle<cr>", "trouble" },
-  w = { "<cmd>TroubleToggle workspace_diagnostics<cr>", "workspace" },
-  d = { "<cmd>TroubleToggle document_diagnostics<cr>", "document" },
-  q = { "<cmd>TroubleToggle quickfix<cr>", "quickfix" },
-  l = { "<cmd>TroubleToggle loclist<cr>", "loclist" },
-  r = { "<cmd>TroubleToggle lsp_references<cr>", "references" },
+  name = "Diagnostics", -- 分组名称
+  t = { "<cmd>TroubleToggle<cr>", "Toggle Trouble" },
+  w = { "<cmd>TroubleToggle workspace_diagnostics<cr>", "Workspace Diagnostics" },
+  d = { "<cmd>TroubleToggle document_diagnostics<cr>", "Document Diagnostics" },
+  q = { "<cmd>TroubleToggle quickfix<cr>", "Quickfix" },
+  l = { "<cmd>TroubleToggle loclist<cr>", "Location List" },
+  r = { "<cmd>TroubleToggle lsp_references<cr>", "References" },
 }
 
-lvim.colorscheme = "monokai-pro"
--- 设置 jk 退出插入模式
-lvim.keys.insert_mode["jk"] = "<Esc>"
-
+-- [[ 自动完成设置 ]]
 local cmp = require("cmp")
-lvim.builtin.cmp.mapping["<CR>"] = cmp.mapping.confirm({ select = true })
-
--- -- 普通模式下的 Control-s 保存
--- lvim.keys.normal_mode["<C-s>"] = ":w<CR>"
-
--- -- 插入模式下的 Control-s 保存
-lvim.keys.insert_mode["<C-s>"] = "<Esc>:w<CR>"
-
--- 替换 Control-s 保存文件，避免光标跳动
-vim.keymap.set({ "n", "i", "v" }, "<C-s>", function()
-  vim.cmd("silent! update") -- 调用静默保存，不显示跳动
-end, { desc = "Save file" })
-
--- Shift + HJKL 切换 Buffer
-lvim.keys.normal_mode["<S-h>"] = ":BufferLineCyclePrev<CR>" -- 向左切换 Buffer
-lvim.keys.normal_mode["<S-l>"] = ":BufferLineCycleNext<CR>" -- 向右切换 Buffer
-lvim.keys.normal_mode["<S-j>"] = ":BufferLineMoveNext<CR>"  -- 将当前 Buffer 向右移动
-lvim.keys.normal_mode["<S-k>"] = ":BufferLineMovePrev<CR>"  -- 将当前 Buffer 向左移动
-lvim.builtin.lualine.style = "default"
-
-lvim.format_on_save.enabled = true
-
-
--- LeetCode 快捷键映射 for LunarVim
-lvim.keys.normal_mode["<leader>kl"] = ":Leet<CR>"
-lvim.keys.normal_mode["<leader>kr"] = ":Leet run<CR>"
-lvim.keys.normal_mode["<leader>ks"] = ":Leet submit<CR>"
+lvim.builtin.cmp.mapping["<CR>"] = cmp.mapping.confirm({ select = true }) -- 回车选择补全项
